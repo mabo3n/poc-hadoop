@@ -15,9 +15,9 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
-public class WordCount {
+public class WordIndexer {
 
-    public static class TokenizerMapper extends Mapper<Object, Text, Text, Text> {
+    public static class LineToWordOccurrencesMapper extends Mapper<Object, Text, Text, Text> {
 
         private static Text hadoopText = new Text();
         private static Text hadoopTextValue = new Text();
@@ -32,8 +32,7 @@ public class WordCount {
             StringTokenizer lineTokenizer = new StringTokenizer(line);
 
             while (lineTokenizer.hasMoreTokens()) {
-                String word = lineTokenizer.nextToken();
-                word = word.toLowerCase();
+                String word = lineTokenizer.nextToken().toLowerCase();
 
                 if (word.length() > 1) {
                     hadoopText.set(word);
@@ -44,12 +43,12 @@ public class WordCount {
         }
     }
 
-    public static class IntSumReducer extends Reducer<Text, Text, Text, Text> {
+    public static class WordOccurrencesReducer extends Reducer<Text, Text, Text, Text> {
 
         private Text result = new Text();
 
         public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-            
+
             if (!values.iterator().hasNext()) { return; }
 
             String word = key.toString();
@@ -76,7 +75,6 @@ public class WordCount {
             }
 
             StringBuilder reducedValueBuilder = new StringBuilder();
-            // reducedValueBuilder.append("word: " + word + " {\n  " + "files:\n");
 
             Set<String> fileNames = wordOccurrencesInFiles.keySet();
             for (String fileName : fileNames) {
@@ -98,12 +96,12 @@ public class WordCount {
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "wordcount");
+        Job job = Job.getInstance(conf, "Word indexer");
 
-        job.setJarByClass(WordCount.class);
+        job.setJarByClass(WordIndexer.class);
 
-        job.setMapperClass(TokenizerMapper.class);
-        job.setReducerClass(IntSumReducer.class);
+        job.setMapperClass(LineToWordOccurrencesMapper.class);
+        job.setReducerClass(WordOccurrencesReducer.class);
 
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
