@@ -78,15 +78,13 @@ public class WordIndexer {
 
             Set<String> fileNames = wordOccurrencesInFiles.keySet();
             for (String fileName : fileNames) {
-                reducedValueBuilder.append("\n  " + fileName);
+                reducedValueBuilder.append("\n>" + fileName);
 
                 ArrayList<Long> offsets = wordOccurrencesInFiles.get(fileName);
                 for (long offset : offsets) {
                     reducedValueBuilder.append(" " + offset);
                 }
             }
-
-            reducedValueBuilder.append("\n");
 
             String reducedValue = reducedValueBuilder.toString();
             result.set(reducedValue);
