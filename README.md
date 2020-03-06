@@ -12,6 +12,7 @@ docker build -t mabo3n/poc-hadoop:0.5 .
 
 ```shell
 docker run -it -p 80:80 mabo3n/poc-hadoop:0.5
+docker run -it --rm -v $(pwd)/out:/app/out -p 80:80 poc-hadoop
 ```
 
 The container will set up and start the MapReduce job with your files inside `in/` as the input.

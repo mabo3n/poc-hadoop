@@ -37,14 +37,17 @@ export HADOOP_COMPILE_LIBS
 javac -cp .:$HADOOP_COMPILE_LIBS WordIndexer.java
 
 # Generate the bytecode
-jar cvf wc.jar WordIndexer*.class
+jar cvf wi.jar WordIndexer*.class
 
 # Run MapReduce
-hadoop jar wc.jar WordIndexer in/ out/
+hadoop jar wi.jar WordIndexer in/ out/
 
 # Set alias for quick accessing the MapReduce's output
 OUTPUT="hadoop fs -cat ./out/part-r-00000"
 export OUTPUT
+
+# Copy output files to container's mapped volume
+hadoop fs -copyToLocal ./out/ /app/
 
 # Run bash
 /bin/bash
