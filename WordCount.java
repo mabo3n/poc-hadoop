@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.hadoop.conf.Configuration;
@@ -18,7 +19,6 @@ public class WordCount {
 
     public static class TokenizerMapper extends Mapper<Object, Text, Text, Text> {
 
-        // private final static IntWritable one = new IntWritable(1);
         private static Text hadoopText = new Text();
         private static Text hadoopTextValue = new Text();
 
@@ -27,7 +27,7 @@ public class WordCount {
             // [word][filename;byteoffset]
 
             String fileName = ((FileSplit) context.getInputSplit()).getPath().getName();
-            String line = value.toString().replaceAll("[^a-zA-Z0-9_-]", " ");
+            String line = value.toString().replaceAll("[^a-zA-Z0-9]+", " ");
 
             StringTokenizer lineTokenizer = new StringTokenizer(line);
 
@@ -37,21 +37,20 @@ public class WordCount {
 
                 if (word.length() > 1) {
                     hadoopText.set(word);
-                    hadoopTextValue.set(fileName + ";" + key);
+                    hadoopTextValue.set(fileName + ";" + String.valueOf(key));
                     context.write(hadoopText, hadoopTextValue);
-                    // context.write(hadoopText, one);
                 }
             }
         }
     }
 
-    public static class IntSumReducer
-            // extends Reducer<Text,IntWritable,Text,IntWritable> {
-            extends Reducer<Text, Text, Text, Text> {
+    public static class IntSumReducer extends Reducer<Text, Text, Text, Text> {
 
         private Text result = new Text();
 
         public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+            
+            if (!values.iterator().hasNext()) { return; }
 
             String word = key.toString();
             Hashtable<String, ArrayList<Long>> wordOccurrencesInFiles = new Hashtable<String, ArrayList<Long>>();
@@ -59,6 +58,12 @@ public class WordCount {
             for (Text value : values) {
 
                 String[] fileNameAndLineOffset = value.toString().split(";");
+
+                if (fileNameAndLineOffset.length < 2) {
+                    System.out.println("Unable to reduce: " + value.toString());
+                    continue;
+                }
+
                 String fileName = fileNameAndLineOffset[0];
                 Long lineOffset = Long.parseLong(fileNameAndLineOffset[1]);
 
@@ -68,23 +73,22 @@ public class WordCount {
                 }
 
                 wordOccurrencesInFiles.get(fileName).add(lineOffset);
-
             }
 
             StringBuilder reducedValueBuilder = new StringBuilder();
-            reducedValueBuilder.append(word + "{\n");
+            // reducedValueBuilder.append("word: " + word + " {\n  " + "files:\n");
 
-            wordOccurrencesInFiles.forEach((file, offsets) -> {
-                reducedValueBuilder.append(file + " { ");
+            Set<String> fileNames = wordOccurrencesInFiles.keySet();
+            for (String fileName : fileNames) {
+                reducedValueBuilder.append("\n  " + fileName);
 
+                ArrayList<Long> offsets = wordOccurrencesInFiles.get(fileName);
                 for (long offset : offsets) {
-                    reducedValueBuilder.append(offset + ", ");
+                    reducedValueBuilder.append(" " + offset);
                 }
+            }
 
-                reducedValueBuilder.append("},");
-            });
-
-            reducedValueBuilder.append("},\n");
+            reducedValueBuilder.append("\n");
 
             String reducedValue = reducedValueBuilder.toString();
             result.set(reducedValue);
@@ -99,7 +103,6 @@ public class WordCount {
         job.setJarByClass(WordCount.class);
 
         job.setMapperClass(TokenizerMapper.class);
-        job.setCombinerClass(IntSumReducer.class);
         job.setReducerClass(IntSumReducer.class);
 
         job.setOutputKeyClass(Text.class);
