@@ -1,2 +1,5 @@
 in*/*
 out*/*
+
+!in/.put_your_files_here
+!out/.output_will_be_here
