@@ -1,4 +1,4 @@
-# Start hadoop with default configuration
+echo "Starting hadoop nodes on the machine"
 /etc/bootstrap.sh
 
 # Sleep for a while to allow hadoop do initialize
@@ -7,7 +7,8 @@ sleep 4
 # Leave hadoop's safe mode manually if it is still on
 $HADOOP_PREFIX/bin/hadoop dfsadmin -safemode leave
 
-# Copy input files to HDFS
+echo "Copying input files to HDFS. "
+echo "This may take a while..."
 $HADOOP_PREFIX/bin/hdfs dfs -mkdir in/ && \
 $HADOOP_PREFIX/bin/hdfs dfs -copyFromLocal /app/in/* in/
 
@@ -27,6 +28,7 @@ chmod +x $HADOOP_PREFIX/share/hadoop/mapreduce/hadoop-mapreduce-client-core-2.7.
 chmod +x $HADOOP_PREFIX/share/hadoop/common/lib/commons-cli-1.2.jar
 chmod 777 WordIndexer.java
 
+echo "Compiling program and running MapReduce"
 # Compile source files
 HADOOP_COMPILE_LIBS=\
 $HADOOP_PREFIX/share/hadoop/common/hadoop-common-2.7.1.jar:\
@@ -46,8 +48,10 @@ hadoop jar wi.jar WordIndexer in/ out/
 OUTPUT="hadoop fs -cat ./out/part-r-00000"
 export OUTPUT
 
+echo "Moving output files from hdfs to out/"
 # Copy output files to container's mapped volume
 hadoop fs -copyToLocal ./out/ /app/
 
+echo "All done! Leading you to the machine's terminal:"
 # Run bash
 /bin/bash

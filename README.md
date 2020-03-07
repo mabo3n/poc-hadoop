@@ -61,6 +61,8 @@ aae
 docker build -t mabo3n/word-indexer:1.0 .
 ```
 
+Note that this may take a while to complete in its first execution. Docker has to download everything to cache in your machine.
+
 **4. Run the built image with the following command**
 
 ```shell
