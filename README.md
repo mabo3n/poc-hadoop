@@ -64,7 +64,7 @@ docker build -t mabo3n/word-indexer:1.0 .
 **4. Run the built image with the following command**
 
 ```shell
-docker run -it --rm -v $(pwd)/out:/app/out -p 80:80 mabo3n/word-indexer:1.0
+docker run -it --rm -v $(pwd)/in:/app/in -v $(pwd)/out:/app/out -p 80:80 mabo3n/word-indexer:1.0
 ```
 
 A docker container will set up and start a MapReduce job with your files inside `in/` as the input.

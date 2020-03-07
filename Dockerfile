@@ -8,11 +8,17 @@ RUN yum install -y java-1.8.0-openjdk-devel ; yum clean all
 RUN rm -r /usr/java/default
 RUN cp -r /usr/lib/jvm/java-1.8.0 /usr/java/default
 
-# Copy project files to /app/
+# Create app directories
 RUN mkdir app
-COPY . app/
+RUN mkdir app/in
+RUN mkdir app/out
 
-# Create mount point on output directory
+# Copy src files to /app/
+COPY start.sh app/
+COPY WordIndexer.java app/
+
+# Create mount points for input/output directories
+VOLUME app/in
 VOLUME app/out
 
 # Expose port to allow external connection
