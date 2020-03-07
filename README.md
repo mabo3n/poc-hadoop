@@ -3,6 +3,7 @@
 This app reads provided text files and create a single index file listing all word occurrences in the files.
 
 **Input**: any text(s) file(s).
+
 **Output**: A single file with the following format.
 
 ```
@@ -11,7 +12,7 @@ word1
 >anotherFile.txt position1 position2 position3 ...
 ```
 
-<details> <summary> <i> See exampoutputle input/output </i> </summary>
+<details> <summary> <i> See example input/output </i> </summary>
 
 Input (*in/text.txt*):
 
@@ -50,17 +51,17 @@ aae
 
 # Usage 
 
-## 1. Assure your are in this project's *root* directory
+**1. Assure your are in this project's *root* directory**
 
-## 2. Put your input text file(s) inside the `in/` folder
+**2. Put your input text file(s) inside the `in/` folder**
 
-## 3. Run the following command to build an docker image from the Dockerfile
+**3. Run the following command to build an docker image from the Dockerfile**
 
 ```shell
 docker build -t mabo3n/word-indexer:1.0 .
 ```
 
-## 4. Run the built image with the following command
+**4. Run the built image with the following command**
 
 ```shell
 docker run -it --rm -v $(pwd)/out:/app/out -p 80:80 mabo3n/word-indexer:1.0
